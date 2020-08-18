@@ -5,11 +5,10 @@ import json
 from django.db import models
 from django.core.exceptions import ValidationError, ImproperlyConfigured
 from django.core.validators import (
-    MaxValueValidator, validate_comma_separated_integer_list,
+    MinValueValidator, MaxValueValidator, validate_comma_separated_integer_list,
 )
 from django.utils.translation import ugettext_lazy as _
 from django.utils.timezone import now
-from six import python_2_unicode_compatible
 from django.conf import settings
 
 from model_utils.managers import InheritanceManager
@@ -24,8 +23,6 @@ class CategoryManager(models.Manager):
         new_category.save()
         return new_category
 
-
-@python_2_unicode_compatible
 class Category(models.Model):
 
     category = models.CharField(
@@ -42,8 +39,6 @@ class Category(models.Model):
     def __str__(self):
         return self.category
 
-
-@python_2_unicode_compatible
 class SubCategory(models.Model):
 
     sub_category = models.CharField(
@@ -63,8 +58,6 @@ class SubCategory(models.Model):
     def __str__(self):
         return self.sub_category + " (" + self.category.category + ")"
 
-
-@python_2_unicode_compatible
 class Quiz(models.Model):
 
     title = models.CharField(
@@ -174,7 +167,6 @@ class Quiz(models.Model):
     def anon_q_data(self):
         return str(self.id) + "_data"
 
-
 class ProgressManager(models.Manager):
 
     def new_progress(self, user):
@@ -182,7 +174,6 @@ class ProgressManager(models.Manager):
                                    score="")
         new_progress.save()
         return new_progress
-
 
 class Progress(models.Model):
     """
@@ -303,7 +294,6 @@ class Progress(models.Model):
         """
         return Sitting.objects.filter(user=self.user, complete=True)
 
-
 class SittingManager(models.Manager):
 
     def new_sitting(self, user, quiz):
@@ -350,7 +340,6 @@ class SittingManager(models.Manager):
         except Sitting.MultipleObjectsReturned:
             sitting = self.filter(user=user, quiz=quiz, complete=False)[0]
         return sitting
-
 
 class Sitting(models.Model):
     """
@@ -539,9 +528,10 @@ class Sitting(models.Model):
         answered = len(json.loads(self.user_answers))
         total = self.get_max_score
         return answered, total
+    
+    def __str__(self):
+        return "{} | {}".format(self.user, self.quiz)
 
-
-@python_2_unicode_compatible
 class Question(models.Model):
     """
     Base class for all question types.
@@ -569,11 +559,23 @@ class Question(models.Model):
                                null=True,
                                verbose_name=_("Figure"))
 
-    content = models.CharField(max_length=1000,
+    title = models.CharField(max_length=1000,
+                               blank=False,
+                               help_text=_("Enter the question title that "
+                                           "you want displayed"),
+                               verbose_name=_('Title'))
+
+    content = models.TextField(max_length=1000,
                                blank=False,
                                help_text=_("Enter the question text that "
                                            "you want displayed"),
                                verbose_name=_('Question'))
+
+    hint = models.TextField(max_length=1000,
+                               blank=True,
+                               help_text=_("Enter the hint text that "
+                                           "you want displayed"),
+                               verbose_name=_('Hint'))
 
     explanation = models.TextField(max_length=2000,
                                    blank=True,
@@ -581,6 +583,10 @@ class Question(models.Model):
                                                "after the question has "
                                                "been answered."),
                                    verbose_name=_('Explanation'))
+
+    level = models.PositiveIntegerField(default=1, validators=[MinValueValidator(1), MaxValueValidator(5)])
+
+    points = models.PositiveIntegerField(default=10, validators=[MinValueValidator(1), MaxValueValidator(50)], verbose_name=_('Point'))
 
     objects = InheritanceManager()
 

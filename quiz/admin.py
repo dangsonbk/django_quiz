@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.contrib.admin.widgets import FilteredSelectMultiple
 from django.utils.translation import ugettext_lazy as _
 
-from .models import Quiz, Category, SubCategory, Progress, Question
+from .models import Quiz, Category, SubCategory, Progress, Question, Sitting
 from multichoice.models import MCQuestion, Answer
 from true_false.models import TF_Question
 from essay.models import Essay_Question
@@ -68,11 +68,11 @@ class SubCategoryAdmin(admin.ModelAdmin):
 class MCQuestionAdmin(admin.ModelAdmin):
     list_display = ('content', 'category', )
     list_filter = ('category',)
-    fields = ('content', 'category', 'sub_category',
-              'figure', 'quiz', 'explanation', 'answer_order')
+    fields = ('title', 'content', 'category', 'sub_category',
+              'figure', 'hint', "level", "points", 'explanation', 'answer_order')
 
     search_fields = ('content', 'explanation')
-    filter_horizontal = ('quiz',)
+    # filter_horizontal = ('quiz',)
 
     inlines = [AnswerInline]
 
@@ -88,17 +88,17 @@ class ProgressAdmin(admin.ModelAdmin):
 class TFQuestionAdmin(admin.ModelAdmin):
     list_display = ('content', 'category', )
     list_filter = ('category',)
-    fields = ('content', 'category', 'sub_category',
-              'figure', 'quiz', 'explanation', 'correct',)
+    fields = ('title', 'content', 'category', 'sub_category',
+              'figure', 'hint', "level", "points", 'explanation', 'correct',)
 
     search_fields = ('content', 'explanation')
-    filter_horizontal = ('quiz',)
+    # filter_horizontal = ('quiz',)
 
 
 class EssayQuestionAdmin(admin.ModelAdmin):
     list_display = ('content', 'category', )
     list_filter = ('category',)
-    fields = ('content', 'category', 'sub_category', 'quiz', 'explanation', )
+    fields = ('title', 'content', 'category', 'sub_category', 'hint', "level", "points", 'explanation', )
     search_fields = ('content', 'explanation')
     filter_horizontal = ('quiz',)
 
@@ -109,3 +109,4 @@ admin.site.register(MCQuestion, MCQuestionAdmin)
 admin.site.register(Progress, ProgressAdmin)
 admin.site.register(TF_Question, TFQuestionAdmin)
 admin.site.register(Essay_Question, EssayQuestionAdmin)
+admin.site.register(Sitting)
